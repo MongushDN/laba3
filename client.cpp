@@ -27,7 +27,7 @@ public:
             std::lock_guard<std::mutex> lock(coutMutex);
             std::cerr<<"Client "<<client_id<<": socket creation is failed."<<strerror(errno)<<std::endl; 
             return;}
-            
+
         server_addr.sin_family=AF_INET;
         server_addr.sin_port=htons(port);
 
@@ -87,7 +87,7 @@ public:
             std::cerr<<"Client "<<client_id<<": recieved wrong message type"<<std::endl;
         }
     }
-    
+
     void disconnect(){
         close(sockfd);
         std::lock_guard<std::mutex> lock(coutMutex);
@@ -98,7 +98,7 @@ public:
     }
 };
 
-void ClientThreadFunc(uint32_t client_id, int NumMess){
+void ClientThreadFunc(uint32_t client_id, int numMess){
     TCPClient client(client_id);
     if (!client.connect_to_server()){return;}
     for(int i=1;i<=numMess;++i){
@@ -115,9 +115,10 @@ int main(int argc, char* argv[])
     if(argc>1) numClients=atoi(argv[1]);
     if(argc>2) numMess=atoi(argv[2]);
 
+
     std::vector<std::thread> clients;
-    
-    for(int i=1, i<=numClients;++i){
+
+    for(int i=1; i<=numClients;++i){
         clients.emplace_back(ClientThreadFunc,i,numMess);
         usleep(100000);//вроде 100миллисек.
     }
@@ -126,3 +127,4 @@ int main(int argc, char* argv[])
     }
     return 0;
 }
+
