@@ -1,7 +1,8 @@
 #include <iostream>      
 #include <thread>        
 #include <mutex>         
-#include <queue>         
+#include <queue>
+#include <condition_variable>
 #include <cstring>       
 #include <sys/socket.h>  
 #include <netinet/in.h> 
@@ -12,6 +13,7 @@ class ThreadSafeQueue {
 private:
     std::queue<message_t> messages;
     std::mutex mtx;
+    std::condition_variable cv;
     
 public:
     void push(const message_t& message) {
@@ -19,12 +21,37 @@ public:
         messages.push(message);
         std::cout << "Добавлен запрос " << message.numb 
                   << ". Размер очереди: " << messages.size() << std::endl;
+        cv.notify_one();
     }
 
-    // TODO обработка очереди на Тёме
+    message_t pop() {
+        std::unique_lock<std::mutex> lock(mtx);
+        cv.wait(lock, [this] { return !messages.empty(); }); 
+        message_t msg = messages.front();
+        messages.pop();
+        return msg;
+    }
+
+    bool empty() {
+        std::lock_guard<std::mutex> lock(mtx);
+        return messages.empty();
+    }
 };
 
 ThreadSafeQueue globalQueue;
+
+void processQueue() {
+    while (true) {
+        message_t msg = globalQueue.pop();
+        std::cout << "Обрабатываем сообщение "
+            << msg.numb
+            << ", тип: " << (msg.type == msg_PING ? "PING" : "PONG")
+            << std::endl;
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+}
+
 
 void handleClient(int clientSocket, int clientId) {
     std::cout << "Клиент " << clientId << ". Начинаем обработку." << std::endl;
@@ -89,6 +116,9 @@ int main() {
     }
     
     std::cout << "Сервер запущен. Порт: 1234" << std::endl;
+
+    std::thread processor(queueProcessor);
+    processor.detach();
     
     int clientId = 0;
     
