@@ -117,7 +117,7 @@ int main() {
     
     std::cout << "Сервер запущен. Порт: 1234" << std::endl;
 
-    std::thread processor(queueProcessor);
+    std::thread processor(processQueue);
     processor.detach();
     
     int clientId = 0;

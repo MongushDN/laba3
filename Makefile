@@ -9,7 +9,7 @@ SERVER_SOURCES = server.cpp common.cpp
 all: $(TARGETS)  # Цель по умолчанию
 
 client: $(CLIENT_SOURCES)
-	$(CXX) $(CXXFLAGS) -o client $(CLIENT_SOURCES)
+	$(CXX) $(CXXFLAGS) -pthread -o client $(CLIENT_SOURCES)
 
 server: $(SERVER_SOURCES)
 	$(CXX) $(CXXFLAGS) -pthread -o server $(SERVER_SOURCES)

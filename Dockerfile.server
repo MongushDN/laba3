@@ -1,0 +1,22 @@
+FROM ubuntu:20.04
+
+# Компилятор и необходимые инструменты
+RUN apt-get update && apt-get install -y \
+    g++ \
+    make \
+    && rm -rf /var/lib/apt/lists/*
+
+# Рабочую директорию
+WORKDIR /app
+
+# Копируем исходные файлы
+COPY common.h common.cpp server.cpp Makefile ./
+
+# Компилируем сервер
+RUN make server
+
+# Открываем порт для клиентов
+EXPOSE 1234
+
+# Запускаем сервер
+CMD ["./server"]

@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile.server
+    container_name: cpp-server
+    ports:
+      - "1234:1234"  # пробрасываем порт на хост
+    networks:
+      - app-network
+
+  client:
+    build:
+      context: .
+      dockerfile: Dockerfile.client
+    container_name: cpp-client
+    depends_on:
+      - server
+    networks:
+      - app-network
+    environment:
+      - SERVER_HOST=cpp-server
+    command: ["./client", "10", "5"]
+
+networks:
+  app-network:
+    driver: bridge

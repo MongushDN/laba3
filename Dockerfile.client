@@ -1,0 +1,17 @@
+FROM ubuntu:20.04
+
+RUN apt-get update && apt-get install -y \
+    g++ \
+    make \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Копируем исходные файлы
+COPY common.h common.cpp client.cpp Makefile ./
+
+# Компилируем клиента
+RUN make client
+
+# По умолчанию запускаем с 5 клиентами и 3 сообщениями
+CMD ["./client", "5", "3"]
